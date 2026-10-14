@@ -1,0 +1,95 @@
+#!/bin/bash
+# tools/linux/package.sh <x86_64|aarch64> (inside the amd64 build container, tools/linux/appimage.sh): the game built
+# against build/linux/<arch>/deps, hactool, and the seed generator helper (tools/linux/rando_helper.sh) put together
+# as an AppDir and packed by appimagetool: build/dist/LAS_Recomp-<version>-<arch>.AppImage.
+# Shipped next to the executable (usr/bin, where runtime/paths.c rt_resource looks): hactool, rando-gen/, the window
+# icon, the start screen font. usr/lib: the libraries from deps/ only - glibc, libstdc++, the Vulkan loader and the
+# GPU drivers are the system's (a bundled loader would not find the user's drivers). No game files, keys or fonts.
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+ARCH=$1
+L=$PWD/build/linux/$ARCH
+P=$L/deps
+B=$L/game
+APPDIR=$L/AppDir
+VERSION=$(sed -n 's/^#define LARECOMP_VERSION "\(.*\)"/\1/p' runtime/ui/launcher.mm)
+OUT=build/dist/LAS_Recomp-$VERSION-$ARCH.AppImage
+JOBS=$(nproc)
+
+tools/linux/build_deps.sh "$ARCH"
+
+CROSSCC=clang
+if [ "$ARCH" != "$(uname -m)" ]; then
+    : "${SYSROOT:?cross build: SYSROOT (the arm64 root filesystem)}"
+    CROSSCC="clang --target=$ARCH-linux-gnu --sysroot=$SYSROOT -fuse-ld=lld"
+    MAKEARGS=(ARCH="$ARCH" SYSROOT="$SYSROOT")
+else
+    MAKEARGS=(ARCH="$ARCH")
+fi
+
+# hactool (ISC), built here for the old glibc: a copy of tools/hactool (`make hactool` clones it)
+[ -d tools/hactool ] || git clone -q https://github.com/SciresM/hactool tools/hactool
+rm -rf "$L/hactool" && cp -R tools/hactool "$L/hactool"
+(cd "$L/hactool" && rm -f hactool && find . -name '*.o' -delete && find . -name '*.a' -delete \
+    && cp -n config.mk.template config.mk; make -j"$JOBS" CC="$CROSSCC")
+
+# the game: generated/ (or generated-<arch>/ for a cross build, `make gen ARCH=<arch>` on the host)
+make -j"$JOBS" B="$B" DEPS="$P" SHADERC=-lshaderc_shared "${MAKEARGS[@]}" "$B/lasrecomp"
+
+# ---- AppDir
+rm -rf "$APPDIR" && mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/lib"
+cp "$B/lasrecomp" "$APPDIR/usr/bin/"
+llvm-strip --strip-debug "$APPDIR/usr/bin/lasrecomp"  # (symbols stay: crash backtraces name functions)
+cp "$L/hactool/hactool" "$APPDIR/usr/bin/"
+llvm-strip "$APPDIR/usr/bin/hactool"
+cp docs/icon/icon_1024.png "$APPDIR/usr/bin/icon.png"
+cp third_party/fonts/Baloo2/Baloo2-SemiBold.ttf "$APPDIR/usr/bin/"  # (start screen font, OFL)
+cp third_party/fonts/Baloo2/OFL.txt "$APPDIR/usr/bin/Baloo2-OFL.txt"
+cp README.md LICENSE "$APPDIR/usr/bin/"  # (licenses and source links of the bundled components: README "License")
+[ -d "$L/helper/rando-gen" ] || { echo "no seed generator helper: tools/linux/rando_helper.sh $ARCH first"; exit 1; }
+cp -R "$L/helper/rando-gen" "$APPDIR/usr/bin/"
+cp tools/linux/AppRun "$APPDIR/" && chmod +x "$APPDIR/AppRun"
+cp tools/linux/lasrecomp.desktop "$APPDIR/"
+cp docs/icon/icon_1024.png "$APPDIR/lasrecomp.png" && ln -sf lasrecomp.png "$APPDIR/.DirIcon"
+
+# libraries: what lasrecomp needs (DT_NEEDED, recursively) that deps/ provides; anything else must be a system one
+needed() { readelf -d "$1" | sed -n 's/.*(NEEDED).*\[\(.*\)\]/\1/p'; }
+SYSTEM_LIBS='^(libc|libm|libdl|libpthread|librt|libresolv|libstdc\+\+|libgcc_s|libvulkan)\.so|^ld-linux'
+todo=("$APPDIR/usr/bin/lasrecomp")
+while [ ${#todo[@]} -gt 0 ]; do
+    f=${todo[0]}; todo=("${todo[@]:1}")
+    for n in $(needed "$f"); do
+        [ -e "$APPDIR/usr/lib/$n" ] && continue
+        if [ -e "$P/lib/$n" ]; then
+            cp -L "$P/lib/$n" "$APPDIR/usr/lib/$n"
+            patchelf --set-rpath '$ORIGIN' "$APPDIR/usr/lib/$n"
+            todo+=("$APPDIR/usr/lib/$n")
+        elif ! [[ $n =~ $SYSTEM_LIBS ]]; then
+            echo "package: $(basename "$f") needs $n, neither bundled nor a base system library"; exit 1
+        fi
+    done
+done
+patchelf --set-rpath '$ORIGIN/../lib' "$APPDIR/usr/bin/lasrecomp"
+if ls "$APPDIR/usr/lib" | grep -iE 'x264|x265|xvid|postproc|vulkan'; then  # (no GPL codecs, no Vulkan loader)
+    echo "package: library that must not ship"; exit 1
+fi
+echo "bundled: $(ls "$APPDIR/usr/lib" | tr '\n' ' ')"
+
+# ---- AppImage (appimagetool runs extracted: no FUSE in the container)
+fetch() {  # url sha256 file
+    [ -f "build/linux/src/$3" ] || { curl -fsSL -o "build/linux/src/$3.part" "$1" && mv "build/linux/src/$3.part" "build/linux/src/$3"; }
+    echo "$2  build/linux/src/$3" | sha256sum -c --quiet
+}
+fetch https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage \
+      ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0 appimagetool-x86_64.AppImage
+case $ARCH in
+    x86_64) fetch https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-x86_64 \
+                  2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d runtime-x86_64 ;;
+    aarch64) fetch https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-aarch64 \
+                   00cbdfcf917cc6c0ff6d3347d59e0ca1f7f45a6df1a428a0d6d8a78664d87444 runtime-aarch64 ;;
+esac
+chmod +x build/linux/src/appimagetool-x86_64.AppImage
+mkdir -p build/dist && rm -f "$OUT"
+APPIMAGE_EXTRACT_AND_RUN=1 ARCH=$ARCH build/linux/src/appimagetool-x86_64.AppImage --no-appstream \
+    --runtime-file "build/linux/src/runtime-$ARCH" "$APPDIR" "$OUT"
+ls -la "$OUT"

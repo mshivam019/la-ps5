@@ -1,0 +1,44 @@
+Link’s Awakening PS5 — third-party notices
+
+LAS Recomp runtime and recompiler: Peiikai and contributors, MIT. The port
+started from geno55/acnh-recomp revision 6b45a0c23649786eac1fc39e01ae4a90769c8221.
+See LICENSE and NOTICE. Nintendo game code/assets are supplied by each player
+and are not covered by this license or included in public packages.
+
+Mihawk’s PS5 Vulkan/template foundation and native integration retain their
+original per-file licenses. The payload SDK/platform, native CRT and portions
+of the native tooling/link recipe are GPL-3.0-or-later. The combined native
+application is distributed subject to those terms, with matching dependency
+source and build scripts supplied alongside each release. FreeBSD headers
+retain their per-file BSD notices.
+
+Mesa/RADV: MIT and other per-file licenses; full corresponding source and its
+license notices are in the dependency-source archive. See licenses/Mesa.txt.
+SDL3: Sam Lantinga and contributors, zlib license.
+volk: Arseny Kapoulkine, MIT; full notice in ps5/third_party/volk/volk.h.
+Dear ImGui: Omar Cornut and contributors, MIT.
+Vulkan Memory Allocator: Advanced Micro Devices, MIT.
+shaderc: Google and contributors, Apache-2.0. glslang and SPIRV-Tools retain
+their own notices; source and notices accompany the release.
+FFmpeg 6.1.3: LGPL-2.1-or-later configured subset. GPL and nonfree options are
+not enabled. Corresponding source and configuration scripts are supplied.
+SMAA: Jorge Jimenez and contributors, MIT; notice in third_party/smaa/SMAA.hlsl.
+Baloo 2 SemiBold: SIL Open Font License 1.1.
+DejaVu Sans: Bitstream Vera/DejaVu license.
+LLVM libc++, libc++abi, libunwind and compiler-rt: Apache-2.0 with LLVM
+exceptions. License in licenses/LLVM.txt. SDK runtime source version 18.1.8:
+https://github.com/llvm/llvm-project/tree/llvmorg-18.1.8
+
+Complete license texts for the principal linked components are in ps5/licenses
+in source and licenses in packaged releases. Vendored components also retain
+notices in their source directories. Exact source pins, local source snapshots
+and binary provenance accompany the dependency-source archive. That archive is
+for rebuilding the runtime; it contains no generated game code, keys or saves.
+
+Application artwork: Island by Delapouite, CC BY 3.0, recolored and placed in
+original SVG layouts. https://game-icons.net/1x1/delapouite/island.html
+License: https://creativecommons.org/licenses/by/3.0/
+See ps5/ARTWORK.md for source and rendering details.
+
+Desktop setup includes hactool by SciresM, ISC license, with mbedTLS under its
+original license. Corresponding source is included in the dependency archive.

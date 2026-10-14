@@ -1,0 +1,74 @@
+{
+  "upstream": {
+    "url": "https://github.com/geno55/acnh-recomp",
+    "revision": "6b45a0c23649786eac1fc39e01ae4a90769c8221"
+  },
+  "python": {
+    "capstone": "5.0.9",
+    "unicorn": "2.1.4",
+    "lz4": "4.4.5"
+  },
+  "native_sdk": "Existing ~/ps5sdk/native-app-boilerplate compiler wrappers and prepared payload SDK",
+  "native_sdl3": {
+    "workspace": "../Dusklight-PS5/.deps/src/SDL",
+    "revision": "68159af2b34cc4fe5b3548faa89e87a69e4d2dce"
+  },
+  "native_mesa": {
+    "workspace": "../Dusklight-PS5/.deps/src/mesa",
+    "revision": "0b2d6d1a61d9bbf89cf8beb88a696144f67c61f8"
+  },
+  "archives": [
+    {
+      "filename": "vma-3.3.0.tar.gz",
+      "url": "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v3.3.0.tar.gz",
+      "sha256": "c4f6bbe6b5a45c2eb610ca9d231158e313086d5b1a40c9922cb42b597419b14e",
+      "source_directory": "VulkanMemoryAllocator"
+    },
+    {
+      "filename": "shaderc-2026.3.tar.gz",
+      "url": "https://github.com/google/shaderc/archive/refs/tags/v2026.3.tar.gz",
+      "sha256": "ee493ccf1b3038b4ef2fe024664c5eb2dc4bcc1f6b05b33e3909de0e19c81024",
+      "source_directory": "shaderc"
+    }
+  ],
+  "hactool": {
+    "url": "https://github.com/SciresM/hactool",
+    "revision": "1d64a83450e025622f3468c28fc4164dad2c5ef6",
+    "usage": "Host-only private NSP extraction; not a PS5 runtime tool"
+  },
+  "native_platform": {
+    "workspace": "../PS5_PayloadSDK/platform",
+    "revision": "dade40735d912c339926a5ff98753fc60103d8fe",
+    "usage": "Direct guest-memory backing; host tests use actual range allocator with SDK kernel model",
+    "license": "GPL-3.0-or-later"
+  },
+  "native_template": {
+    "workspace": "../PS5_VulkanTemplate",
+    "revision": "6d0221abf02a900230d5b4ced3138d422e172426",
+    "usage": "Native link, display, launch/exit contracts and vendored volk"
+  },
+  "native_vulkan": {
+    "workspace": "../PS5_Vulkan",
+    "revision": "1a7bb8f45db1737ef6683a91c52b118356018e9a",
+    "usage": "RADV link recipe, CRT, native SELF tool and libc.prx"
+  },
+  "ffmpeg": {
+    "version": "6.1.3",
+    "url": "https://ffmpeg.org/releases/ffmpeg-6.1.3.tar.xz",
+    "sha256": "bc5f1e4a4d283a6492354684ee1124129c52293bcfc6a9169193539fbece3487",
+    "configure": "ps5/tools/build-ffmpeg.sh",
+    "license": "LGPL-2.1-or-later configured subset"
+  },
+  "volk": {
+    "source": "../PS5_VulkanTemplate/ps5/third_party/volk",
+    "files": {
+      "volk.c": "698571dde0c43bc296ab5997ffebf5d8176a9d9e586894590069dbae5ace3c68",
+      "volk.h": "479bab725a424d54715fe9e54b1a69b344a9c36fb617c9aa2cc4289814d8acdf"
+    }
+  },
+  "native_controller": {
+    "source": "../Wind-Waker-HD-PS5/ps5/native/platform.c and input.cpp",
+    "usage": "Mihawk platform pad API plus SDL virtual-gamepad bridge; title-specific touchpad and Minus mappings",
+    "license": "MIT"
+  }
+}
