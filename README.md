@@ -1,5 +1,9 @@
 # Link’s Awakening for PS5
 
+**[Start here: installation, USB/offline copying, Wi-Fi FTP and game-file locations](INSTALL.md).**
+M.2, Ethernet and PS5 Upload are optional. The guide also explains recovery after
+store updates; older packaged instructions may describe the developer's M.2 setup.
+
 Native PS5 port of the 2019 Switch version of **The Legend of Zelda: Link’s Awakening**, based on [LAS Recomp](https://github.com/peiikai/LASRecomp). Title ID: **PPSA99670**.
 
 The PS5 port uses Mihawk’s Vulkan foundation and the LAS Recomp NVN-to-Vulkan renderer. It runs recompiled game code with a native runtime. You must supply your own **Switch version 1.0.0** game dump and keys. Game files, keys, saves and generated game code are not distributed with this project. Update files are not supported by this build.
@@ -13,25 +17,32 @@ The PS5 port uses Mihawk’s Vulkan foundation and the LAS Recomp NVN-to-Vulkan 
 - DualSense input, PlayStation button textures, native audio and movie playback.
 - Controller-operated launcher and touchpad settings menu.
 - Background shader compilation with persistent caches.
-- Saves, settings and caches stored alongside the title on M.2.
+- Saves, settings and caches stored alongside the title.
 
 ## Requirements
 
 - A homebrew-capable PS5 with native folder-title support and a compatible registration/mounting setup.
 - Your own **Switch version 1.0.0** base-game dump and keys.
-- A computer for preparing your game files and enough free M.2 space for the title.
+- A computer for preparing your game files and enough free space at your selected installation location.
 
 ## Installation
 
-1. Install **PPSA99670.zip** using your native-title launcher or PS5 Upload.
-2. Extract the matching **Linux setup ZIP** on your computer (Windows users can use WSL2).
-3. Run `sh setup.sh --nsp /path/to/base-game.nsp --keys /path/to/prod.keys --output /path/to/prepared/PPSA99670`.
-4. Close the game and copy the generated `extracted/` folder into `/mnt/ext1/etaHEN/games/PPSA99670/`.
-5. Launch **Link’s Awakening** from the PS5 home screen.
+1. Install `PPSA99670.zip` from ProsperoStore/the release, or unpack the
+   precompiled app for manual installation.
+2. Use the matching Linux/WSL2 setup bundle on your own Switch v1.0.0 base NSP
+   and keys to generate `extracted/` (including `game.la`, ExeFS and RomFS). The
+   current generator still requires Python 3.11+, LLVM and about35GB free; the file
+   helper does not replace this step or add native Windows/macOS generation.
+3. With the game closed, copy **extracted/** into the installed `PPSA99670` folder.
+   Use USB/file-manager copying, Wi-Fi FTP, Ethernet FTP or any preferred method.
+   The destination is your loader/store's installed folder, not a fixed M.2 path.
+4. Preserve saves/settings. A new manual app requires mounting/registration with
+   your existing native-title loader; then start its home-screen tile.
 
-The application and desktop setup are separate downloads. Setup prepares the private game module and assets from your dump. Keep `user/` when updating: it contains saves, settings and shader caches.
-
-See [setup requirements and paths](ps5/README.md), [build instructions](ps5/BUILD.md), [release packaging](ps5/RELEASING.md), and [upstream documentation](README.upstream.md).
+[INSTALL.md](INSTALL.md) explains storage, offline transfer, the separate prepare
+and transfer helpers, and game-file recovery after store updates. The original
+game-module converter and file-transfer step are independent; preparing files
+never requires a console connection.
 
 ## Controls
 

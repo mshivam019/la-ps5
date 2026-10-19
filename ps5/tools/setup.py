@@ -105,7 +105,7 @@ def main():
     run(sys.executable, ROOT / 'ps5/tools/build-game-module.py', '--archive', archive,
         '--clang', args.clang, '--linker', args.linker, '--nm', args.nm, '--output', module)
     run(sys.executable, ROOT / 'ps5/tools/package-game.py', '--game', game, '--module', module, '--output', args.output)
-    print(f'\nReady: {args.output.resolve()}\nThis private output contains game data. Do not redistribute it.')
+    print(f'\nReady-to-copy game folder: {args.output.resolve()}\nCopy extracted/ into the installed PPSA99670 folder using any method. No console was contacted. See INSTALL.md.\nThis private output contains game data. Do not redistribute it.')
 
 
 if __name__ == '__main__':
